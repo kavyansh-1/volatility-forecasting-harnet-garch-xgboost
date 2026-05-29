@@ -1,0 +1,37 @@
+# Virtual environment
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Data
+data/
+
+# IDE/editor
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Plots / outputs (optional - remove if you want to track generated plots)
+plots/
+reports/
+
+# Ignore large files
+*.csv
+*.parquet
+
+# Keep this repo clean - remove if you actually want to track these
