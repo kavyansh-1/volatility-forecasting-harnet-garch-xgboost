@@ -1,0 +1,4 @@
+Ticker,Status,Rows,Start,End,Missing cells,Duplicate_dates,Non_bdays,Neg_Prices,Zero_volume,Bad_OHLC,Close_min,Close_max
+SPY,CLEAN,2516,2015-01-02,2024-12-31,0,0,0,0,0,0,154.56,597.11
+QQQ,CLEAN,2516,2015-01-02,2024-12-31,0,0,0,0,0,0,89.47,533.92
+AAPL,CLEAN,2516,2015-01-02,2024-12-31,0,0,0,0,0,0,20.57,257.38
