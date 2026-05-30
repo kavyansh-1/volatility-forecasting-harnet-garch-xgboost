@@ -55,3 +55,4 @@ if __name__ == "__main__":
     print("\n SPY sample (first 5 rows with returns are as follows):")
     print(dfs_ret["SPY"][["Close", "log_return", "simple_return"]].head())
 
+
