@@ -1,7 +1,64 @@
 import os
+from pathlib import Path
+from typing import Tuple
+
 import numpy as np
 import pandas as pd
-from typing import Tuple
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+
+def _normalize_datetime_index(df: pd.DataFrame) -> pd.DataFrame:
+  if isinstance(df.index, pd.DatetimeIndex):
+    return df.sort_index()
+
+  for column_name in ["date", "Date", "datetime", "Datetime"]:
+    if column_name in df.columns:
+      df = df.copy()
+      df[column_name] = pd.to_datetime(df[column_name], errors="coerce")
+      df = df.dropna(subset=[column_name]).set_index(column_name)
+      return df.sort_index()
+
+  return df
+
+
+def _infer_price_column(df: pd.DataFrame) -> str:
+  for column_name in ["adj_close", "Adj Close", "close", "Close", "price", "Price"]:
+    if column_name in df.columns:
+      return column_name
+  raise ValueError("could not find a close/adjusted-close column")
+
+
+def load_ticker_frame(ticker: str, root_dir: Path | None = None) -> pd.DataFrame:
+  """Load a ticker dataset from processed data if available, otherwise raw data."""
+
+  root_dir = Path(root_dir) if root_dir is not None else PROJECT_ROOT
+  candidate_paths = [
+    root_dir / "data" / "processed" / f"{ticker}_processed.csv",
+    root_dir / "data" / "raw" / f"{ticker}_daily.csv",
+  ]
+
+  for path in candidate_paths:
+    if not path.exists():
+      continue
+
+    df = pd.read_csv(path)
+    df = _normalize_datetime_index(df)
+
+    if "log_return" not in df.columns:
+      price_column = _infer_price_column(df)
+      df = df.copy()
+      df[price_column] = pd.to_numeric(df[price_column], errors="coerce")
+      df["log_return"] = np.log(df[price_column]).diff()
+
+    return df
+
+  raise FileNotFoundError(f"could not find a dataset for {ticker} in {candidate_paths}")
+
+
+def load_ticker_frames(tickers: list[str], root_dir: Path | None = None) -> dict:
+  return {ticker: load_ticker_frame(ticker, root_dir=root_dir) for ticker in tickers}
 
 
 def build_rv_target(df: pd.DataFrame) -> Tuple[pd.Series, pd.Series]:
@@ -100,14 +157,10 @@ def train_test_split_ts(
 
 
 if __name__ == "__main__":
-  # Simple runnable demo: try to load `data/raw/AAPL_daily.csv` from workspace root.
-  sample_path = os.path.join(os.getcwd(), "data", "raw", "AAPL_daily.csv")
-  if os.path.exists(sample_path):
-    df = pd.read_csv(sample_path, parse_dates=["date"]).set_index("date")
-    if "close" not in df.columns:
-      raise RuntimeError(f"expected `close` column in {sample_path}")
-  else:
-    # create synthetic data
+  # Simple runnable demo: try to load AAPL from the workspace, otherwise synthesize data.
+  try:
+    df = load_ticker_frame("AAPL")
+  except FileNotFoundError:
     dates = pd.bdate_range(end=pd.Timestamp.today(), periods=800)
     price = 100 + np.cumsum(np.random.normal(0, 1, size=len(dates)))
     df = pd.DataFrame({"close": price}, index=dates)
