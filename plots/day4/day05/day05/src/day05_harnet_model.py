@@ -70,6 +70,7 @@ class HARNet(nn.Module):
         h = F.relu(self.fc_1(h))
         h = self.dropout(h)
         out = self.fc_2(h)
+        out = F.softplus(out) + 1e-8
         return out.squeeze(-1)
 
 
