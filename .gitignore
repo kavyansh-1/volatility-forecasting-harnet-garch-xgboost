@@ -26,3 +26,6 @@ Thumbs.db
 # Keep generated plots/reports and project data under version control
 
 # Keep this repo clean - remove if you actually want to track these
+# Environment files
+.env
+.env.*
