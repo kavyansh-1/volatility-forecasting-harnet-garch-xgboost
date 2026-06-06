@@ -123,7 +123,7 @@ def prepare_all_tickers() -> dict:
     print(f"\n{'='*55}")
     print("DAY 7 - Data Preparation")
     print(f"\n{'='*55}")
-     datasets = {}
+    datasets = {}
     for ticker in TICKERS:
         datasets[ticker] = prepare_dataset(ticker)
         d = datasets[ticker]
