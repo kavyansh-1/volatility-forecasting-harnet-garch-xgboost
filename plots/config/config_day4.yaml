@@ -1,0 +1,60 @@
+project:
+      tickers: ["SPY" , "QQQ" , "AAPL"]
+      target_col: "rv_1d"
+      random_seed: 42
+
+split:
+     test_size: 500
+     val_size: 252
+
+backtest:
+        initial_train_size: 756
+        step_size: 21
+        forecast_horizon : 1
+
+
+
+har:
+  lag_windows: [1,5,21] 
+  ridge_alphas: [0.0001, 0.001, 0.01 , 0.1, 1,0 , 10,0 , 100,0]
+  include_gk: [true , false]
+  cv_splits: 5
+
+
+garch: 
+      p_values: [1,2]
+      q_values: [1,2]
+      distributions: ["normal" , "t" , "skewt"]
+      vol_models: ["GARCH", "EGARCH"]
+
+
+xgboost:
+        n_iter:   30
+        cv_splits: 5
+        param_space:
+            n_estimators: [50,100,200,300,500]
+            max_depth: [2,3,4,5,6]
+            learning_rate: [0.005, 0.01 , 0.05, 0.1 , 0.2]
+            subsample: [0.6,0.7,0.8,0.9,1.0]
+            colsample_bytree:[0.5,0.6,0.7,0.8,1.0]
+            min_child_weight:[1,3,5,7]
+            reg_alpha: [0.0,0.01,0.1,1.0]
+            reg_lambda: [0.5,1.0,2.0 , 5.0]
+
+
+features:
+      rv_lags: [1,2,3,4,5,10,21]
+      return_lags: [1,2,3,5]
+      rolling_vols:[5,21,63]
+      include_park: true
+      include_gk: true
+
+evaluation:
+    metrics:["RMSE" , "MAE" , "MAPE" , "QLIKE" , "DirAcc"]
+     # QLIKE (Quasi-Likelihood): log(h_t) + r_t^2/h_t
+  # DirAcc: fraction of days where sign(forecast change) == sign(actual change)
+
+
+
+
+
