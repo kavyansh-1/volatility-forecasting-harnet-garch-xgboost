@@ -1,31 +1,5 @@
-# Virtual environments
 venv/
-.venv/
-
-# Python
+env/
 __pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-
-# IDE/editor
-.idea/
-*.sublime-workspace
-*.sublime-project
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-
-# Jupyter
-.ipynb_checkpoints/
-
-# Keep generated plots/reports and project data under version control
-
-# Environment files
+*.pyc
 .env
-.env.*
-node_modules
