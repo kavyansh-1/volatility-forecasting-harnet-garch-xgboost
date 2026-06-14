@@ -218,14 +218,8 @@ def run_all_dm_tests(predictions: dict) -> pd.DataFrame:
 
 
 def summarise_dm(dm_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Build a win/loss matrix:
-    For each model, how many times did it significantly
-    outperform another model across all tickers?
-
-    Returns a DataFrame where entry [i,j] = number of tickers
-    where model i significantly beat model j (p < 0.05).
-    """
+  
+    
     if dm_df.empty:
         return pd.DataFrame()
 
