@@ -1,0 +1,8 @@
+,GARCH_base,HARNet_aug,HARNet_base,HAR_aug,HAR_base,XGB_aug,XGB_base
+GARCH_base,0,0,0,0,0,0,0
+HARNet_aug,1,3,0,0,1,0,1
+HARNet_base,1,0,3,0,1,0,1
+HAR_aug,0,0,0,0,0,0,0
+HAR_base,0,0,0,0,0,0,0
+XGB_aug,0,0,0,0,0,0,0
+XGB_base,0,0,0,0,1,0,1
