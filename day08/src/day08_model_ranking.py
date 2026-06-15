@@ -5,7 +5,7 @@ warnings.filterwarnings("ignore")
 import numpy as np 
 import pandas as pd 
 
-BASE_DIR = os.path,abspath(os.path.join(os.path.dirname(__file__), ".."))
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 OUT_DIR = os.path.join(BASE_DIR, "output")
 
 WEIGHTS = {
@@ -98,82 +98,66 @@ def compute_per_ticker_ranks(df: pd.DataFrame) -> pd.DataFrame:
         sub = df[df["Ticker"] == ticker].copy()
 
         for metric , weight in WEIGHTS.items():
-            if metric not in sub.columns():
+            if metric not in sub.columns:
                 continue
             ascending = metric in LOWER_IS_BETTER
             sub[f"rank_{metric}"] = sub[metric].rank(ascending = ascending , method = "min")
 
-            rank_cols = [f"rank_{m}" for m in WEIGHTS
-            if f"rankk_{m}" in sub.columns]
+        rank_cols = [f"rank_{m}" for m in WEIGHTS if f"rank_{m}" in sub.columns]
+        weights_list = [WEIGHTS[m] for m in WEIGHTS if f"rank_{m}" in sub.columns]
 
-            weights = [WEIGHTS[m] for m in WEIGHTS
-            if f"rank_{m}" in sub.columns]
+        sub["composite_score"] = sum(w * sub[rc] for w , rc in zip(weights_list , rank_cols))
 
-            sub["composite_score"] = sum(w * sub[rc]
-            for w , rc in zip(weights , rank_cols))
+        sub["overall_rank"] = sub["composite_score"].rank(
+            method = "min" , ascending = True
+        ).astype(int)
 
-            sub["overall_rank"] = sub["composite_score"].rank(
-                method = "min" , ascending = True
-            ).asType(int)
-
-            all_rows.append(sub)
+        all_rows.append(sub)
         
-        return pd.concat(all_rows , ignore_index = True)
+    return pd.concat(all_rows , ignore_index = True)
 
-        def compute_cross_ticker_ranking(df:pd.DataFrame)-> pd.DataFrame:
-            agg_cols = ["RMSE" , "MAE" , "QLIKE" , "DirAcc" , "composite_score"]
-            agg_cols = [c for c in agg_cols if c in df.columns]
+def compute_cross_ticker_ranking(df:pd.DataFrame)-> pd.DataFrame:
+    agg_cols = ["RMSE" , "MAE" , "QLIKE" , "DirAcc" , "composite_score"]
+    agg_cols = [c for c in agg_cols if c in df.columns]
 
-            cross = (
-                df.groupby("Model")[agg_cols]
-                .mean()
-                .reset_index()
-                .sort_values("composite_score")
-                .reset_index(drop = True)
+    cross = (
+        df.groupby("Model")[agg_cols]
+        .mean()
+        .reset_index()
+        .sort_values("composite_score")
+        .reset_index(drop = True)
+    )
+    cross["final_rank"] = range(1, len(cross) + 1)
 
-            )
-            cross["final_rank"] = range(1, len(cross) + 1)
+    return cross
 
-            return cross
+def run_model_ranking() -> tuple:
 
-            def run_model_ranking() -> tuple:
+    print(f"\n{'='*55}")
+    print("  DAY 8 — Model Ranking")
+    print(f"{'='*55}")
 
-              print(f"\n{'='*55}")
-              print("  DAY 8 — Model Ranking")
-              print(f"{'='*55}")
+    raw_df = load_all_metrics()
+    ranked_df = compute_per_ticker_ranks(raw_df)
+    final_df = compute_cross_ticker_ranking(ranked_df)
 
-              raw_df = load_all_metrics()
-              ranked_df = compute_per_ticker_ranks(raw_df)
-              final_df = compute_cross_ticker_ranking(ranked_df)
+    if not os.path.exists(OUT_DIR):
+        os.makedirs(OUT_DIR)
 
-              ranked-df.to_csv(
-                os.path.join(OUT_DIR , "day08_per_ticker_ranks.csv"), 
-                index = False
-             )
+    ranked_df.to_csv(
+        os.path.join(OUT_DIR , "day08_per_ticker_ranks.csv"), 
+        index = False
+    )
 
-              final_df.to_csv(
-                os.path.join(OUT_DIR , "day08_final_ranking.csv"),
-                index = False
-             )
+    final_df.to_csv(
+        os.path.join(OUT_DIR , "day08_final_ranking.csv"),
+        index = False
+    )
 
-              print("\n Final Model Ranking (cross-ticker average):")
-              print(final_df[["final_rank" , "Model" , "RMSE" , "DirAcc" , "composite_score"]].to_string(index = False))
+    print("\n Final Model Ranking (cross-ticker average):")
+    print(final_df[["final_rank" , "Model" , "RMSE" , "DirAcc" , "composite_score"]].to_string(index = False))
 
-              
-              print(f"\n   day08_per_ticker_ranks.csv")
-              print(f"  day08_final_ranking.csv")
+    print(f"\n   day08_per_ticker_ranks.csv")
+    print(f"  day08_final_ranking.csv")
 
-              return ranked_df , final_df
-
-
-
-              
-
-
-
-        
-
-
-    
-
-
+    return ranked_df , final_df
