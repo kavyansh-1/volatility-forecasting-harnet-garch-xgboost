@@ -1,0 +1,5 @@
+Method,Confidence,N,N_violations,Observed_rate_%,Expected_rate_%,Kupiec_p,Calibrated,Christoffersen_p,Independent,Mean_VaR_%,Mean_CVaR_%
+CCC,95%,500,185,37.0,5.0,0.0,False,0.4253,True,-0.107,-0.135
+CCC,99%,500,179,35.8,1.0,0.0,False,0.2058,True,-0.152,-0.174
+DCC,95%,500,186,37.2,5.0,0.0,False,0.5131,True,-0.105,-0.131
+DCC,99%,500,180,36.0,1.0,0.0,False,0.1877,True,-0.148,-0.17

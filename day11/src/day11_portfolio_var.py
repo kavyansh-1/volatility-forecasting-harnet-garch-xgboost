@@ -239,10 +239,8 @@ def run_portfolio_var_analysis(cov_results: dict = None,
                 "VaR": VaR, "CVaR": CVaR, "violations": violations,
             }
 
-            status = "✓ CALIBRATED" if kup["well_calibrated"] else "✗ MISCALIBRATED"
-            print(f"    {label} {int((1-alpha)*100)}%: "
-                  f"observed={violations.mean()*100:.2f}%  "
-                  f"expected={alpha*100:.0f}%  {status}")
+            status = "CALIBRATED" if kup["well_calibrated"] else "MISCALIBRATED"
+            print(f"    {label} {int((1-alpha)*100)}%: observed={violations.mean()*100:.2f}%  expected={alpha*100:.0f}%  {status}")
 
     summary_df = pd.DataFrame(summary_rows)
     summary_df.to_csv(
