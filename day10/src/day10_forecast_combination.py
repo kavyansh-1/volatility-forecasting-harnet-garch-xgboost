@@ -39,7 +39,7 @@ def load_or_simulate_predictions(ticker : str)-> dict:
         return preds 
 
 def simple_average(preds : dict, model_names : list)-> np.ndarray:
-    stacked = np.column_stack([preds_m for m in model_names])
+    stacked = np.column_stack([preds[m] for m in model_names])
     return stacked.mean(axis = 1)
 
 

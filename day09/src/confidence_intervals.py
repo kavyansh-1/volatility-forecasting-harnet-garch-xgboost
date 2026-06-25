@@ -42,7 +42,7 @@ def compute_har_intervals(df : pd.DataFrame, ticker : str , n_boot : int = N_BOO
                           axis=1).dropna()
 
     X = combined.drop(columns=["target"])
-    y = combined["target"]
+    y = combined["target"] 
     n = len(X)
 
     split   = n - TEST_SIZE
