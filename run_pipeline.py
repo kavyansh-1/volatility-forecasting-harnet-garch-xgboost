@@ -15,7 +15,8 @@ scripts_to_run = [
     "day06/src/day06_fetch_news.py",
     "day06/src/day06_sentiment.py",
     "day07/src/day07_merge_sentiment.py",
-    "day07/src/day07_har_sentiment.py"
+    "day07/src/day07_har_sentiment.py",
+    "day11/src/day11_run_all.py"
 ]
 
 def main():

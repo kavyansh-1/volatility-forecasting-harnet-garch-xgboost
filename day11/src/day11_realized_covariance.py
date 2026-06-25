@@ -10,16 +10,16 @@ DATA_DIR = os.path.join(BASE_DIR , ".." , "data" , "processed")
 OUT_DIR = os.path.join(BASE_DIR , "output")
 os.makedirs(OUT_DIR , exist_ok = True)
 
-TICKERS = ["SPY" , "QQQ" < "AAPL"]
+TICKERS = ["SPY", "QQQ", "AAPL"]
 ROLL_WINDOW = 21 
 EWMA_LAMBDA = 0.94
-PAIRS = [("SPY" , "QQQ") , ("SPY" , "AAPL") , ("QQQ") , ("AAPL")]
+PAIRS = [("SPY", "QQQ"), ("SPY", "AAPL"), ("QQQ", "AAPL")]
 
 def load_returns_matrix() -> pd.DataFrame:
     series = {} 
     for ticker in TICKERS:
         path = os.path.join(DATA_DIR , f"{ticker}_processed.csv")
-        if not os.apth.exists(path):
+        if not os.path.exists(path):
             raise FileNotFoundError(f"Missing Path : {path} - run Day 2 code first please")
         df = pd.read_csv(path , index_col="Date" , parse_dates = True)
         series[ticker] = df["log_return"]
@@ -35,18 +35,20 @@ def rolling_covariance(returns : pd.DataFrame , window : int = ROLL_WINDOW)-> di
         window_data = shifted.iloc[i-window : i]
         if window_data.isnull().any().any():
             continue
-        cov = window_data.cov().values()*252
-        cov_dict[shifted_index[i]] = cov 
+        cov = window_data.cov().values * 252
+        cov_dict[shifted.index[i]] = cov 
 
     return cov_dict
 
 def ewma_covariance ( returns : pd.DataFrame , lam : float = EWMA_LAMBDA)-> dict:
-    r = returns.values()
+    r = returns.values
     n , k = r.shape
 
-    for t in range(ROLL_WINDOW , n):
-        r_prev = r[t-1].reshape(-1,1)
-        sigma = lam * sigma + (1-lam) * (r_prev @ r_prev.T)
+    sigma = np.cov(r[:ROLL_WINDOW].T) * 252
+    ewma_dict = {}
+    for t in range(ROLL_WINDOW, n):
+        r_prev = r[t-1].reshape(-1, 1)
+        sigma = lam * sigma + (1 - lam) * (r_prev @ r_prev.T)
         ewma_dict[returns.index[t]] = sigma * 252
 
     return ewma_dict
@@ -94,9 +96,9 @@ def run_realized_covariance()-> dict:
     ewma_corr_df.to_csv(os.path.join(OUT_DIR, "day11_ewma_correlations.csv"))
     returns.to_csv(os.path.join(OUT_DIR, "day11_aligned_returns.csv"))
 
-    print(f"\n  ✓ day11_rolling_correlations.csv ({len(roll_corr_df)} rows) ")
-    print(f"\n  ✓ day11_ewma_correlations.csv ({len(roll_corr_df)} rows) ")
-    print(f"\n  ✓ day11_aligned_returns.csv ({len(roll_corr_df)} rows")
+    print(f"\n  [OK] day11_rolling_correlations.csv ({len(roll_corr_df)} rows)")
+    print(f"\n  [OK] day11_ewma_correlations.csv ({len(ewma_corr_df)} rows)")
+    print(f"\n  [OK] day11_aligned_returns.csv ({len(returns)} rows)")
 
     print("\n Mean Rolling Correlations: ")
     print(roll_corr_df.mean().round(4).to_string())
@@ -108,10 +110,10 @@ def run_realized_covariance()-> dict:
         "roll_cov" : roll_cov,
         "ewma_cov" : ewma_cov, 
         "roll_corr_df" : roll_corr_df,
-        "roll_ewma_df" : roll_ewma_df,
+        "ewma_corr_df" : ewma_corr_df,
     }
 
-if __name__ == "main":
+if __name__ == "__main__":
     run_realized_covariance()
 
 
