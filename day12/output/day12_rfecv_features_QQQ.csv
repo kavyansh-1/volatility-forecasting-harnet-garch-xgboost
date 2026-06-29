@@ -1,0 +1,6 @@
+Ticker,feature
+QQQ,rv_rolling_5d
+QQQ,rv_rolling_21d
+QQQ,park_vol_5d
+QQQ,gk_vol_5d
+QQQ,gk_vol_21d
