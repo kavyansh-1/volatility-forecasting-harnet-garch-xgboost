@@ -1,0 +1,8 @@
+Ticker,feature
+AAPL,rv_rolling_5d
+AAPL,rv_rolling_21d
+AAPL,park_daily_var
+AAPL,gk_daily_var
+AAPL,park_vol_5d
+AAPL,gk_vol_5d
+AAPL,dispersion_5d_avg

@@ -1,0 +1,4 @@
+Ticker,Total_features,RFECV_selected,Top_Pearson,Top_MI,Top_XGB
+SPY,19,5,gk_daily_var,park_vol_5d,qqq_spy_spread_vol_21d
+QQQ,19,5,gk_vol_5d,gk_vol_5d,rv_rolling_5d
+AAPL,19,7,gk_vol_5d,gk_vol_5d,gk_daily_var

@@ -39,6 +39,8 @@ def plot_term_structure_slopes(macro_dfs: dict) -> None:
         df = macro_dfs.get(ticker)
         if df is None:
             continue
+        # Drop rows where the needed slope columns are NaN
+        df = df.dropna(subset=[col for col in ["ts_slope_5_21", "ts_slope_21_63"] if col in df.columns])
         color = TICKER_COL[ticker]
 
         if "ts_slope_5_21" in df.columns:
@@ -71,7 +73,10 @@ def plot_vov_vs_vol(macro_dfs: dict, ticker: str = "SPY") -> None:
     df = macro_dfs.get(ticker)
     if df is None:
         return
-
+    # Ensure required columns exist before dropping NaNs
+    required_cols = [col for col in ["rv_rolling_21d", "vov_21d"] if col in df.columns]
+    if required_cols:
+        df = df.dropna(subset=required_cols)
     fig, axes = plt.subplots(2, 1, figsize=(13, 6), sharex=True)
     fig.suptitle(f"{ticker} — Vol-of-Vol vs Realized Volatility",
                  fontsize=13, fontweight="bold")
@@ -139,20 +144,29 @@ def plot_mi_vs_pearson(selection_results: dict, ticker: str = "SPY") -> None:
         return
 
     res     = selection_results[ticker]
-    pearson = res["pearson_df"].set_index("feature")["pearson_abs_corr"]
-    mi      = res["mi_df"].set_index("feature")["mutual_info"]
-    merged  = pd.concat([pearson, mi], axis=1).dropna()
-    merged.columns = ["pearson", "mi"]
+    pearson_df = res["pearson_df"]
+    mi_df      = res["mi_df"]
+    xgb_df     = res["xgb_df"]
+    rfecv_res  = res["rfecv_res"]
+
+    merged = (
+        pearson_df.set_index("feature")[["pearson_abs_corr", "rank_pearson"]]
+        .join(mi_df.set_index("feature")[["mutual_info", "rank_mi"]], how="outer")
+        .join(xgb_df.set_index("feature")[["xgb_gain", "rank_xgb"]], how="outer")
+    )
+    # Drop rows where all rankings are NaN (unlikely but safe)
+    merged = merged.dropna(how='all')
+    merged["rfecv_selected"] = merged.index.isin(
+        rfecv_res["selected_features"]
+    ).astype(int)
 
     fig, ax = plt.subplots(figsize=(7, 6))
-    ax.scatter(merged["pearson"], merged["mi"],
+    ax.scatter(merged["pearson_abs_corr"], merged["mutual_info"],
                color=TICKER_COL[ticker], alpha=0.65, s=40,
                edgecolors="none")
 
     for feat, row in merged.iterrows():
-        if row["pearson"] > merged["pearson"].quantile(0.75) or \
-           row["mi"] > merged["mi"].quantile(0.75):
-            ax.annotate(feat, (row["pearson"], row["mi"]),
+        ax.annotate(feat, (row["pearson_abs_corr"], row["mutual_info"]),
                         fontsize=6.5, alpha=0.8,
                         xytext=(3, 3), textcoords="offset points")
 
