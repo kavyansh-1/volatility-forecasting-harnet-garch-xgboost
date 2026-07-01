@@ -81,7 +81,7 @@ def run_technical_features(vol_dfs: dict = None) -> dict:
             if not os.path.exists(path):
                 print(f" Oops , {path} not found.. ")
                 continue
-            df = pd.read_csv(path , index_col = "Dates" , parse_dates = True)
+            df = pd.read_csv(path , index_col = "Date" , parse_dates = True)
         
         df = add_technical_features(df) 
 
@@ -89,6 +89,8 @@ def run_technical_features(vol_dfs: dict = None) -> dict:
 
         print(f" {ticker} : {len(tech_cols)} technical features added yayayayayya")
         results[ticker] = df
+
+    return results
 
 
 
