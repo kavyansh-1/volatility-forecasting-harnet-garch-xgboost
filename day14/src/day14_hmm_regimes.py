@@ -4,9 +4,9 @@ warnings.filterwarnings("ignore")
 
 import numpy as np 
 import pandas as pd 
-import hmmlearn import hmm 
+from hmmlearn import hmm 
 
-BASE_DIR = os.path.abspath(os.path.dirname(__file__), "..")
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 DATA_DIR = os.path.join(BASE_DIR , ".." , "data" , "processed")
 OUT_DIR = os.path.join(BASE_DIR , "output")
 os.makedirs(OUT_DIR , exist_ok = True)
@@ -32,7 +32,7 @@ def fit_hmm(log_rv: np.ndarray , n_states: int = N_STATES , n_iter : int = 200, 
     return model
 
 def decode_regimes(model: hmm.GaussianHMM , log_rv : np.ndarray)-> np.ndarray:
-    _ , state_sequence = model.decode(log_rv , algorithm : "viterbi")
+    _ , state_sequence = model.decode(log_rv , algorithm = "viterbi")
     return state_sequence
 
 def label_regimes_by_vol(model: hmm.GaussianHMM , state_sequence : np.ndarray)-> np.ndarray:
@@ -59,13 +59,13 @@ def extract_regime_statistics(model : hmm.GaussianHMM , labels: np.ndarray , log
 
         rows.append({
             "Regime" : regime_names[rank], 
-            "Mean_RV_Ann" : round(raw_mean , 4)
+            "Mean_RV_Ann" : round(raw_mean , 4),
             "Std_RV_Ann" : round(raw_stds , 4), 
-            "Frequency_pct" : round(freq , 2)
-            "Persistence" : round(persist , 4)
+            "Frequency_pct" : round(freq , 2),
+            "Persistence" : round(persist , 4),
         })
 
-        return pd.DataFrame(rows)
+    return pd.DataFrame(rows)
 
 def compute_regime_posteriors(model: hmm.GaussianHMM , log_rv : np.ndarray)->np.ndarray:
     posteriors = model.predict_proba(log_rv)
@@ -82,15 +82,12 @@ def run_hmm_for_ticker(df: pd.DataFrame , ticker : str)-> dict:
 
     print(stats_df.to_string(index = False))
     print(f"\n Transition Matrix:")
-    trans_df = pd.DataFrame(
-        model.trans_mat , index = [f"From {r}" for r in ["Low" , "Med" , "High"] 
-        if True][model.n_components],
-    )
-
     order = np.argsort(model.means_.flatten())
-    print(pd.DataFrame(model.transmat_[np_ix_(order, order)],
-    index = ["Low→","Med→","High→"], 
-    columns = ["Low→","Med→","High→"]).round(3).to_string())
+    print(pd.DataFrame(
+        model.transmat_[np.ix_(order, order)],
+        index = ["Low→", "Med→", "High→"],
+        columns = ["Low→", "Med→", "High→"],
+    ).round(3).to_string())
 
     rv_index = df["rv_rolling_21d"].dropna().index
     regime_series = pd.Series(regime_labels , index = rv_index , name = "regime")
