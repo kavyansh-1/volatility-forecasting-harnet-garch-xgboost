@@ -1,0 +1,7 @@
+DM_tstat,DM_pvalue,Better,Sig,Ticker,Vs
+1.4361,0.1516,RegimeModel,False,SPY,GlobalHAR vs RegimeHAR
+2.4637,0.0141,RegimeModel,True,SPY,GlobalHAR vs RegimeXGB
+1.2215,0.2225,RegimeModel,False,QQQ,GlobalHAR vs RegimeHAR
+2.3278,0.0203,RegimeModel,True,QQQ,GlobalHAR vs RegimeXGB
+-0.7587,0.4484,GlobalHAR,False,AAPL,GlobalHAR vs RegimeHAR
+0.8511,0.3951,RegimeModel,False,AAPL,GlobalHAR vs RegimeXGB
