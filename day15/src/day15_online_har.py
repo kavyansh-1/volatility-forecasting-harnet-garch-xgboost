@@ -63,7 +63,7 @@ class EWMARidge:
             self.M2 = self.lam * self.M2 + (1-self.lam) * delta * delta2
         self.var = np.maximum(self.M2 , 1e-8)
 
-    def _normalise(self , x: np.ndarray , y:float)-> np.ndarray:
+    def _normalise(self , x: np.ndarray)-> np.ndarray:
         return (x - self.mu) / np.sqrt(self.var)
     
     def _update(self , x:np.ndarray , y:float)->None:
@@ -153,7 +153,7 @@ def run_online_comparison()-> dict:
     print(f"BURN_IN = {BURN_IN} days (predictions start after)")
 
     results = {}
-    all_rows = {}
+    all_rows = []
 
     for ticker in TICKERS:
         path = os.path.join(DATA_DIR, f"{ticker}_processed.csv")
@@ -239,7 +239,7 @@ def run_online_comparison()-> dict:
     for ticker , res in results.items():
         res["coef_df"].to_csv(os.path.join(OUT_DIR , f"day15_coef_history_{ticker}.csv"), index = False)
     print(f"\n  ✓ day15_online_metrics.csv")
-    print(f"  ✓ day15_coef_history_{{ticker}}.csv")
+    print(f"  ✓ day15_coef_history_{ticker}.csv")
     return results
 
 

@@ -55,7 +55,7 @@ def compute_jsd(reference: np.ndarray , current: np.ndarray , n_bins: int = 50)-
 
    m = 0.5 * (p+q)
 
-   # now cllipping all the values which are there to avoid log(0)
+   # now clipping all the values which are there to avoid log(0)
 
    kl_pm = np.sum(p*np.log((p+eps) / (m+eps)))
    kl_qm = np.sum(q*np.log((q+eps) / (m+eps)))
@@ -113,7 +113,7 @@ def feature_drift_scan( X: pd.DataFrame , ref_size : int = REF_SIZE , step : int
       start+=step
    return pd.DataFrame(rows)  
 
-def run_drift_detection()->dict:
+def run_drift_detection() -> dict:
    print(f"\n{'='*55}")
    print("  DAY 15 — Distribution Drift Detection")
    print(f"{'='*55}")
@@ -124,45 +124,44 @@ def run_drift_detection()->dict:
    results = {}
 
    for ticker in TICKERS:
-        path = os.path.join(DATA_DIR, f"{ticker}_processed.csv")
-        if not os.path.exists(path):
-            print(f"⚠ {path} not found")
-            continue
+      path = os.path.join(DATA_DIR, f"{ticker}_processed.csv")
+      if not os.path.exists(path):
+         print(f"⚠ {path} not found")
+         continue
 
-        df = pd.read_csv(path , index_col = "Date" , parse_dates = True)
-        rv_1d = (df["log_return"]**2*252).dropna()
-        ret = df["log_return"].dropna()
+      df = pd.read_csv(path, index_col="Date", parse_dates=True)
+      rv_1d = (df["log_return"]**2 * 252).dropna()
+      ret = df["log_return"].dropna()
 
-        print(f"\n {ticker}: ")
+      print(f"\n {ticker}: ")
 
-        #1 now drift on daily RV (primary target variable)
-        rv_drift = rolling_drift_scan(rv_1d)
-        n_drifts = rv_drift["drift_flag"].sum()
-        psi_max = rv_1d["psi"].max()
-        print(f" RV Drift windows : {n_drifts}/{len(rv_drift)}")
-        print(f"Max PSI: {psi_max:.4f} ({'major' if psi_max>=0.25 else 'moderate' if psi_max>=0.10 else 'stable'})")
-    
-        #2 now drift on log returns (feature input)
-        ret_drift = rolling_drift_scan(ret)
+      # 1 now drift on daily RV (primary target variable)
+      rv_drift = rolling_drift_scan(rv_1d)
+      n_drifts = rv_drift["drift_flag"].sum()
+      psi_max = rv_drift["psi"].max() if not rv_drift.empty else 0.0
+      print(f" RV Drift windows : {n_drifts}/{len(rv_drift)}")
+      print(f"Max PSI: {psi_max:.4f} ({'major' if psi_max >= 0.25 else 'moderate' if psi_max >= 0.10 else 'stable'})")
 
-        #3 Feature level PSI to identify which features drift
-        rv_series = pd.Series(rv_1d.values , index = rv_1d.index , name = "r_1d")
-        from day15_online_har import build_har_xy
-        X,y = build_har_xy(df)
-        feat_drift = feature_drift_scan(X)
+      # 2 now drift on log returns (feature input)
+      ret_drift = rolling_drift_scan(ret)
 
-        results[ticker] = {
-           "rv_drift" : rv_drift, 
-           "ret_drift" : ret_drift, 
-           "feat_drift" : feat_drift,
-        }
+      # 3 Feature level PSI to identify which features drift
+      from day15_online_har import build_har_xy
+      X, y = build_har_xy(df)
+      feat_drift = feature_drift_scan(X)
 
-        # now saving these to the directories 
-        rv_drift.to_csv(os.path.join(OUT_DIR , f"day15_rv_drift_{ticker}.csv"), index = False)
-        feat_drift.to_csv(os.path.join(OUT_DIR , f"day15_feature_drift_{ticker}.csv"), index = False)
+      results[ticker] = {
+         "rv_drift": rv_drift,
+         "ret_drift": ret_drift,
+         "feat_drift": feat_drift,
+      }
 
-        print(f"\n ✓ day15_rv_drift_{{ticker}}.csv")
-        print(f"\n ✓ day15_feature_drift_{{ticker}}.csv")
+      # now saving these to the directories
+      rv_drift.to_csv(os.path.join(OUT_DIR, f"day15_rv_drift_{ticker}.csv"), index=False)
+      feat_drift.to_csv(os.path.join(OUT_DIR, f"day15_feature_drift_{ticker}.csv"), index=False)
+
+      print(f"\n ✓ day15_rv_drift_{ticker}.csv")
+      print(f"\n ✓ day15_feature_drift_{ticker}.csv")
 
    return results
 
