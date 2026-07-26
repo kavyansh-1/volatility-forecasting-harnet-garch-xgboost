@@ -166,7 +166,7 @@ def run_jump_detection(intraday_data: dict,
     Run both jump tests for all tickers. Combine results.
     """
     print(f"\n{'='*55}")
-    print("  DAY 16 — Jump Detection")
+    print("  DAY 16 - Jump Detection")
     print(f"{'='*55}")
     print(f"  BNS test alpha={ALPHA}  Lee-Mykland window=20")
 
@@ -210,7 +210,7 @@ def run_jump_detection(intraday_data: dict,
 
         out = os.path.join(OUT_DIR, f"day16_jump_results_{ticker}.csv")
         combined.to_csv(out)
-        print(f"Saved → {out}")
+        print(f"Saved: {out}")
 
         all_results[ticker] = {
             "combined_df" : combined,

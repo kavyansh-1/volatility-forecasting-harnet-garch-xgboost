@@ -192,7 +192,7 @@ def load_or_generate_intraday(ticker: str) -> pd.DataFrame:
         df.index.name = "datetime"
         return df
     else:
-        print(f"  {ticker}: 5-min file not found — generating synthetic bars")
+        print(f"  {ticker}: 5-min file not found - generating synthetic bars")
         daily_path = os.path.join(DATA_DIR, f"{ticker}_processed.csv")
         if not os.path.exists(daily_path):
             raise FileNotFoundError(f"Missing: {daily_path}")
@@ -203,7 +203,7 @@ def load_or_generate_intraday(ticker: str) -> pd.DataFrame:
 def run_intraday_data_pipeline() -> dict:
     """Load or generate intraday data for all tickers."""
     print(f"\n{'='*55}")
-    print("  DAY 16 — Intraday Data Pipeline")
+    print("  DAY 16 - Intraday Data Pipeline")
     print(f"{'='*55}")
     print(f"  Bars/day : {BARS_PER_DAY}  (5-minute, 6.5h session)")
 

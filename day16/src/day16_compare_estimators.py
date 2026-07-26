@@ -26,8 +26,19 @@ def merge_estimators(ticker:str , rv_results: dict , jump_results : str)->pd.Dat
     ## Merging on Date Index 
 
     merged = daily_df.join(rv_df , how="inner")
-    merged = merged.join(jump_df[["jump_var" , "jump_ratio" , "jump_detected" , "J_stat" , "p_value"]],
-                         how = "left")
+    jump_cols = [
+        col for col in [
+            "jump_detected",
+            "J_stat",
+            "p_value",
+            "n_jump_bars",
+            "max_L_stat",
+            "jump_day_lm",
+            "jump_intensity",
+        ]
+        if col in jump_df.columns
+    ]
+    merged = merged.join(jump_df[jump_cols], how="left")
     return merged
 
 def qlike_loss(y: np.ndarray , yhat:np.ndarray , floor: float = 1e-8)-> float:
@@ -65,10 +76,10 @@ def compare_estimators_as_forecasts(merged: pd.DataFrame , ticker: str)-> pd.Dat
         if len(yt) < 10:
             continue
         rows.append({
-            "TICKER" : ticker, 
-            "ESTIMATOR": name, 
+            "Ticker" : ticker, 
+            "Estimator": name, 
             "MSE" : round(mse_loss(yt.values , fc.values), 8),
-            "Q-LIKE" : round(qlike_loss(yt.values , fc.values) , 6), 
+            "QLIKE" : round(qlike_loss(yt.values , fc.values) , 6), 
             "N" : len(yt)
 
         })
@@ -107,7 +118,7 @@ def analyse_jump_day_performance( merged: pd.DataFrame , ticker : str)-> pd.Data
 def run_estimator_comparison(rv_results : dict , jump_results : dict)-> dict:
     """Compare all estimators for all tickers."""
     print(f"\n{'='*55}")
-    print("  DAY 16 — Estimator Comparison")
+    print("  DAY 16 - Estimator Comparison")
     print(f"{'='*55}")
 
     all_compare_rows = []
@@ -136,8 +147,8 @@ def run_estimator_comparison(rv_results : dict , jump_results : dict)-> dict:
     jump_all.to_csv(os.path.join(OUT_DIR , "day16_jump_day_analysis.csv"), index = False)
 
 
-    print(f"\n  ✓ day16_estimator_comparison.csv")
-    print(f"  ✓ day16_jump_day_analysis.csv")
+    print(f"\n  Saved: day16_estimator_comparison.csv")
+    print(f"  Saved: day16_jump_day_analysis.csv")
 
     return {"compare_df": compare_all, "jump_df": jump_all}
 

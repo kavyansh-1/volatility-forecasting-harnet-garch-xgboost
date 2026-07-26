@@ -13,6 +13,7 @@ import seaborn as sns
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 OUT_DIR  = os.path.join(BASE_DIR, "output")
+os.makedirs(OUT_DIR, exist_ok=True)
 
 TICKERS    = ["SPY", "QQQ", "AAPL"]
 TICKER_COL = {"SPY" : "#1f77b4" , "QQQ" : "#ff7f0e" , "AAPL" : "#2ca02c"}
@@ -40,14 +41,14 @@ def plot_intraday_pattern(intraday_data:dict , ticker : str = "SPY")->None:
     ax.set_xlabel("Bar Index (0 = 9:30 AM , 77 = 3:55 PM)")
     ax.set_ylabel("Mean |5-min return| (%)")
     ax.set_title(f"{ticker} - Intraday Volatility Pattern (U-Shape)" , fontsize = 12 , fontweight = "bold")
-    ax.grid(True , alpha = 0.2 , linstyle = "--" , axis = "y")
+    ax.grid(True , alpha = 0.2 , linestyle = "--" , axis = "y")
     ax.spines[["top" , "right"]].set_visible(False)
 
     plt.tight_layout()
     out = os.path.join(OUT_DIR, f"day16_intraday_pattern_{ticker}.png")
     plt.savefig(out , dpi = 150 , bbox_inches = "tight")
     plt.close()
-    print(f"Saved → {out}")
+    print(f"Saved: {out}")
 
 # Plot 2 :- RV vs BV vs close to close time series
 def plot_rv_bv_comparison(rv_results: dict , ticker : str = "SPY")->None:
@@ -71,7 +72,7 @@ def plot_rv_bv_comparison(rv_results: dict , ticker : str = "SPY")->None:
     out = os.path.join(OUT_DIR, f"day16_rv_bv_comparison_{ticker}.png")
     plt.savefig(out, dpi=150, bbox_inches="tight")
     plt.close()
-    print(f"  Saved → {out}")
+    print(f"  Saved: {out}")
 
 #Plot - 3 Jump Variance over time 
 def plot_jump_variance(jump_results: dict)->None:
@@ -105,7 +106,7 @@ def plot_jump_variance(jump_results: dict)->None:
     out = os.path.join(OUT_DIR, "day16_jump_variance.png")
     plt.savefig(out, dpi=150, bbox_inches="tight")
     plt.close()
-    print(f"  Saved → {out}")
+    print(f"  Saved: {out}")
 
 #Plot 4 The Jump Ratio Distribution
 def plot_jump_ratio_dist(jump_results: dict)-> None:
@@ -134,11 +135,22 @@ def plot_jump_ratio_dist(jump_results: dict)-> None:
     out = os.path.join(OUT_DIR, "day16_jump_ratio_dist.png")
     plt.savefig(out, dpi=150, bbox_inches="tight")
     plt.close()
-    print(f"  Saved → {out}")
+    print(f"  Saved: {out}")
 
 # Plot 5: Estimator QLIKE bar chart
 def plot_estimator_qlike(compare_csv: str) -> None:
     df = pd.read_csv(compare_csv)
+
+    rename_map = {}
+    if "Ticker" not in df.columns and "TICKER" in df.columns:
+        rename_map["TICKER"] = "Ticker"
+    if "Estimator" not in df.columns and "ESTIMATOR" in df.columns:
+        rename_map["ESTIMATOR"] = "Estimator"
+    if "QLIKE" not in df.columns and "Q-LIKE" in df.columns:
+        rename_map["Q-LIKE"] = "QLIKE"
+    if rename_map:
+        df = df.rename(columns=rename_map)
+
     tickers   = sorted(df["Ticker"].unique())
     estimators= df["Estimator"].unique()
     x  = np.arange(len(tickers))
@@ -169,7 +181,7 @@ def plot_estimator_qlike(compare_csv: str) -> None:
     out = os.path.join(OUT_DIR, "day16_estimator_qlike.png")
     plt.savefig(out, dpi=150, bbox_inches="tight")
     plt.close()
-    print(f"  Saved → {out}")
+    print(f"  Saved: {out}")
 
 
 # Plot 6: Jump vs no-jump vol distributions
@@ -203,7 +215,7 @@ def plot_jump_day_vol_dist(jump_results: dict,
     out = os.path.join(OUT_DIR, f"day16_jump_vol_dist_{ticker}.png")
     plt.savefig(out, dpi=150, bbox_inches="tight")
     plt.close()
-    print(f"  Saved → {out}")
+    print(f"  Saved: {out}")
 
 
 # Main 
@@ -211,7 +223,7 @@ def run_all_plots(intraday_data: dict,
                    rv_results:   dict,
                    jump_results: dict) -> None:
     print(f"\n{'='*55}")
-    print("  DAY 16 — Generating Plots")
+    print("  DAY 16 - Generating Plots")
     print(f"{'='*55}")
 
     for ticker in TICKERS:

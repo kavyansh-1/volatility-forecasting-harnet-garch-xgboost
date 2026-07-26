@@ -1,4 +1,5 @@
 {
     "C_Cpp.default.compilerPath": "",
-    "python.REPL.enableREPLSmartSend": false
+    "python.REPL.enableREPLSmartSend": false,
+    "C_Cpp.errorSquiggles": "enabled"
 }

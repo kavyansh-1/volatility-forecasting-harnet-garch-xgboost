@@ -193,7 +193,7 @@ def compute_all_estimators(intra_df: pd.DataFrame) -> pd.DataFrame:
 def run_rv_estimation(intraday_data: dict) -> dict:
     """Compute all RV estimators for all tickers."""
     print(f"\n{'='*55}")
-    print("  DAY 16 — Realized Variance Estimation")
+    print("  DAY 16 - Realized Variance Estimation")
     print(f"{'='*55}")
 
     results = {}
@@ -211,6 +211,6 @@ def run_rv_estimation(intraday_data: dict) -> dict:
 
         out = os.path.join(OUT_DIR, f"day16_rv_estimates_{ticker}.csv")
         df.to_csv(out)
-        print(f"    Saved → {out}")
+        print(f"    Saved: {out}")
 
     return results
