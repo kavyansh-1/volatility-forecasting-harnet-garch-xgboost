@@ -260,6 +260,6 @@ def run_realized_moments(intraday_data: dict) -> dict:
     print(f"\n  RMSE comparison (HAR vs HAR+Moments):")
     print(met_df.pivot_table(index="Model", columns="Ticker",
                               values="RMSE").round(8).to_string())
-    print(f"\n  ✓ day17_realized_moments_{{ticker}}.csv")
-    print(f"  ✓ day17_moment_metrics.csv")
+    print(f"\n  [OK] day17_realized_moments_{{ticker}}.csv")
+    print(f"  [OK] day17_moment_metrics.csv")
     return results

@@ -38,16 +38,16 @@ def build_ahar_features(df: pd.DataFrame)-> tuple:
     X["rv_pos_lag_5"] = rv_pos.shift(1).rolling(5 , min_periods = 5).mean()
     X["rv_neg_lag_5"] = rv_neg.shift(1).rolling(5 , min_periods = 5).mean()
     X["rv_pos_lag_21"] = rv_pos.shift(1).rolling(21 , min_periods = 21).mean()
-    X["rv_neglag_21"] = rv_pos.shift(1).rolling(21 , min_periods = 21).mean()
+    X["rv_neg_lag_21"] = rv_neg.shift(1).rolling(21 , min_periods = 21).mean()
     
     #Leverage term: r_{t-1} * I(r_{t-1} < 0)
     #This is negative on down days → with gamma<0, adds to vol forecast
     X["leverage_term"] = (r*(r<0).astype(float)).shift(1)
     #Return symmetry over 5 day window
-    X["ret_asym_5"] = (r.shift(1).rolling(5 , min_periods = 3).apply(lambda x : (x[x<0]).sum() - (x[x<0]).sum()))
+    X["ret_asym_5"] = (r.shift(1).rolling(5 , min_periods = 3).apply(lambda x : abs((x[x<0]).sum()) - (x[x>0]).sum()))
     target = rv_1d.shift(-1)
-    combined = pd.concat([X.target.rename("target")] , axis = 1).dropna()
-    return combined.drop(columns = ["target"]) , combined ["target"]
+    combined = pd.concat([X, target.rename("target")], axis=1).dropna()
+    return combined.drop(columns=["target"]), combined["target"]
 
 def fit_har_variants(X : pd.DataFrame , y: pd.Series , ticker : str)-> dict:
     n = len(X)
@@ -148,7 +148,7 @@ def run_asymmetric_har() -> dict:
         met_df.to_csv(
             os.path.join(OUT_DIR, "day17_ahar_metrics.csv"), index=False
         )
-        print(f"\n  ✓ day17_ahar_metrics.csv")
+        print(f"\n  [OK] day17_ahar_metrics.csv")
         print("\n  Summary (RMSE × 10^4):")
         pivot = met_df.pivot_table(
             index="Model", columns="Ticker", values="RMSE"

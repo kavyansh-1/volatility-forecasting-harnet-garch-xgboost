@@ -193,20 +193,20 @@ def run_leverage_analysis()-> dict:
             "ng" : ng_dict,
         }
 
-        #Saving the results and all 
-        corr_out = pd.concat(all_corr , ignore_index = True)
-        asym_out = pd.concat(all_asym , ignore_index = True)
-        ng_out = pd.concat(all_ng , ignore_index = True)
+    #Saving the results after all tickers are processed
+    corr_out = pd.concat(all_corr , ignore_index = True)
+    asym_out = pd.concat(all_asym , ignore_index = True)
+    ng_out = pd.concat(all_ng , ignore_index = True)
 
-        corr_out.to_csv(os.path.join(OUT_DIR, "day17_return_vol_corr.csv"),
-                    index=False)
-        asym_out.to_csv(os.path.join(OUT_DIR, "day17_asymmetric_regression.csv"),
-                    index=False)
-        ng_out.to_csv(  os.path.join(OUT_DIR, "day17_engle_ng_test.csv"),
-                    index=False)
-        print(f"\n ✓ day17_return_vol_corr.csv")
-        print(f"✓ day17_asymmetric_regression.csv")
-        print(f"✓ day17_engle_ng_test.csv")
+    corr_out.to_csv(os.path.join(OUT_DIR, "day17_return_vol_corr.csv"),
+                index=False)
+    asym_out.to_csv(os.path.join(OUT_DIR, "day17_asymmetric_regression.csv"),
+                index=False)
+    ng_out.to_csv(  os.path.join(OUT_DIR, "day17_engle_ng_test.csv"),
+                index=False)
+    print(f"\n  [OK] day17_return_vol_corr.csv")
+    print(f"  [OK] day17_asymmetric_regression.csv")
+    print(f"  [OK] day17_engle_ng_test.csv")
 
     return results
 

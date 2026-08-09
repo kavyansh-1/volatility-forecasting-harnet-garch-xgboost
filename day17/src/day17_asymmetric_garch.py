@@ -14,7 +14,7 @@ os.makedirs(OUT_DIR, exist_ok=True)
 TICKERS   = ["SPY", "QQQ", "AAPL"]
 TEST_SIZE = 500
 
-def fit_gjr_garch(returns : pd.Series , train_emd : int)->dict:
+def fit_gjr_garch(returns : pd.Series , train_end : int)->dict:
    r_train = returns.iloc[:train_end] * 100
 
    model = arch_model( 
@@ -66,7 +66,7 @@ def fit_gjr_garch(returns : pd.Series , train_emd : int)->dict:
    }
 
 def fit_egarch(returns : pd.Series , train_end : int)-> dict:
-   r_train = returns.iloc["train_end"] * 100
+   r_train = returns.iloc[:train_end] * 100
 
    model = arch_model(
       r_train , vol = "EGARCH" , p = 1 , q = 1, dist = "t" , mean = "AR" , lags = 1,
@@ -111,6 +111,9 @@ def fit_egarch(returns : pd.Series , train_end : int)-> dict:
     }   
 
 def news_impact_curve(gjr : dict = None , egarch : dict = None , n_points: int = 100)-> pd.DataFrame:
+   eps_grid = np.linspace(-5, 5, n_points)
+   rows = []
+
    if gjr is not None and gjr.get("result") is not None:
       res = gjr["result"]
       params = res.params
@@ -128,7 +131,6 @@ def news_impact_curve(gjr : dict = None , egarch : dict = None , n_points: int =
          h_next = omega + (alpha + gamma_p * I_neg)*eps**2 + beta * h_bar
          rows.append({"eps" : eps , "h_next": h_next , "model" : "GJR-GARCH"})
 
-   
    if egarch is not None and egarch.get("result") is not None:
         res    = egarch["result"]
         params = res.params
@@ -137,17 +139,17 @@ def news_impact_curve(gjr : dict = None , egarch : dict = None , n_points: int =
         gamma_p= params.get("gamma[1]", params.get("gamma", -0.05))
         beta   = params.get("beta[1]",  params.get("beta",  0.97))
 
-   #Unconditional Log variance for EGARCH : omega / (1-beta)
-   log_h_bar = omega / (1-abs(beta) + 1e-10)
-   h_bar = np.exp(log_h_bar)
-   h_bar = max(h_bar , 1e-6)
-   E_abs_z = np.sqrt(2 / np.pi) #E[|Z|] for Z~N(0,1)
+        #Unconditional Log variance for EGARCH : omega / (1-beta)
+        log_h_bar = omega / (1-abs(beta) + 1e-10)
+        h_bar = np.exp(log_h_bar)
+        h_bar = max(h_bar , 1e-6)
+        E_abs_z = np.sqrt(2 / np.pi) #E[|Z|] for Z~N(0,1)
 
-   for eps in eps_grid:
-      z = eps / np.sqrt(h_bar)
-      log_h = (omega + alpha * (abs(z) - E_abs_z) + gamma_p * z + beta * log_h_bar)
-      h_next = np.exp(log_h)
-      rows.append({"eps":eps , "h_next" : h_next , "model" : "EGARCH"})
+        for eps in eps_grid:
+          z = eps / np.sqrt(h_bar)
+          log_h = (omega + alpha * (abs(z) - E_abs_z) + gamma_p * z + beta * log_h_bar)
+          h_next = np.exp(log_h)
+          rows.append({"eps":eps , "h_next" : h_next , "model" : "EGARCH"})
 
    return pd.DataFrame(rows)
 
@@ -207,23 +209,23 @@ def run_asymmetric_garch() -> dict:
            valid = ~np.isnan(preds)
            if valid.sum() < 10:
               continue
-           y_v = results[ticker]["y_test"]["len(preds)"][valid]
+           y_v = results[ticker]["y_test"][:len(preds)][valid]
            p_v = preds[valid]
            rmse = np.sqrt(np.mean((y_v-p_v)**2))
            qlike = np.mean(np.log(np.maximum(p_v, 1e-8)) + np.maximum(y_v, 1e-8)/np.maximum(p_v , 1e-8))
-           met_rows.append{
+           met_rows.append({
             "Ticker": ticker, 
             "Model" : model_dict["model"], 
             "RMSE" : round(rmse , 8), 
             "QLIKE" : round(qlike , 6), 
             "AIC" : round(model_dict["aic"] , 2), 
             "BIC" : round(model_dict["bic"],2),
-            }
+            })
    
     met_df = pd.DataFrame(met_rows)
     met_df.to_csv(os.path.join(OUT_DIR, "day17_garch_metrics.csv"),
                   index=False)
-    print(f"\n  ✓ day17_garch_metrics.csv")
+    print(f"\n  [OK] day17_garch_metrics.csv")
     print(met_df.to_string(index=False))
     return results  
 

@@ -1,0 +1,4 @@
+Ticker,LM_Stat,p_value,reject_symmetry,coef_S_neg,coef_neg_int,coef_pos_int,n
+SPY,50.5961,0.0,True,0.230133,-0.303819,0.141821,2505
+QQQ,30.8643,0.0,True,0.064452,-0.265128,0.018579,2505
+AAPL,19.7295,0.0002,True,0.135926,-0.223511,0.134318,2505
