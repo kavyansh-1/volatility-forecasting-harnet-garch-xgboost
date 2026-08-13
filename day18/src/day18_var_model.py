@@ -20,7 +20,7 @@ FEVD_HORIZON = 10
 def load_rv_matrix() -> pd.DataFrame:
     series = {}
     for ticker in TICKERS:
-        path = os.path.join(DATA_DIR, f"{ticker}_processed_csv")
+        path = os.path.join(DATA_DIR, f"{ticker}_processed.csv")
         df = pd.read_csv(path , index_col = "Date", parse_dates=True)
         rv = df["log_return"]**2*252
         series[ticker] = rv.rename(ticker)
@@ -29,21 +29,21 @@ def load_rv_matrix() -> pd.DataFrame:
 def check_stationarity(rv_df : pd.DataFrame)->dict:
     results = {}
     for col in rv_df.columns:
-        stat , pval, _, _, _ = adfuller(rv_df[col].dropna() , maxlag = 5)
+        stat , pval, _, _, _, _ = adfuller(rv_df[col].dropna() , maxlag = 5)
         results[col] = {
             "adf_stat" : round(float(stat) , 4), 
             "p_value" : round(float(pval) , 4), 
             "stationary" : bool(pval < 0.05),
         }
         print(f"ADF {col}: stat = {stat:.4f} p = {pval:.4f}"
-              f"{'stationary ✓' if pval < 0.05 else 'non-stationary ✗'}")
+              f"{'stationary [OK]' if pval < 0.05 else 'non-stationary [FAIL]'}")
     return results 
 
 def select_var_lag(rv_df: pd.DataFrame, max_lags: int = MAX_LAGS)-> int:
 
     model = VAR(rv_df)
-    results = model.select_order(maxlags==max_lags)
-    best_lag = results.aic # AIC-optimal lag order(integer)
+    results = model.select_order(maxlags=max_lags)
+    best_lag = int(results.aic)  # lag order selected by AIC (statsmodels 0.14: scalar order)
     best_lag = max(1 , min(best_lag , max_lags))
     return best_lag
 
@@ -52,7 +52,7 @@ def fit_var(rv_df: pd.DataFrame, n_lags: int)-> object:
     result = model.fit(maxlags=n_lags , ic = None, trend="c")
     return result
 
-def extract_coeffecient_matrix(var_result, lag: int = 1) -> pd.DataFrame:
+def extract_coefficient_matrix(var_result, lag: int = 1) -> pd.DataFrame:
     coefs = var_result.coefs # shape: (n_lags , n_assets , n_assets)
     mat = coefs[lag-1] # lag-1 coeffecient matrix 
     return pd.DataFrame(mat , index = TICKERS , columns=TICKERS)
@@ -71,11 +71,11 @@ def compute_irf(var_result, periods:int = IRF_STEPS)-> dict:
     return irfs
 
 def compute_fevd(var_result , horizon: int = FEVD_HORIZON)->pd.DataFrame:
-    fevd_result = var_result.fevd(periods=horizon) #fevd_result.decomp shape: (n_assets , n_assets , horizon)
-    #decomp[i,j,h] = fraction of asset i's error at horizon h from j 
+    fevd_result = var_result.fevd(periods=horizon) # decomp shape: (n_assets, horizon, n_assets)
+    # decomp[i, h, j] = fraction of asset i's forecast-error variance at horizon h from shock j
 
     #Taking the final horizon value (most informative for the long run spillovers)
-    decomp = fevd_result.decomp[: , : , -1] #(n_assets , n_assets)
+    decomp = fevd_result.decomp[:, -1, :] #(n_assets , n_assets)
 
     fevd_df = pd.DataFrame( decomp , index = [f"{t}_receives" for t in TICKERS], 
                                      columns = [f"{t}_sends" for t in TICKERS],
@@ -140,9 +140,9 @@ def run_var_model() -> dict:
     irf_out = pd.DataFrame(irf_rows)
     irf_out.to_csv(os.path.join(OUT_DIR, "day18_irf.csv"), index=False)
 
-    print(f"\n  ✓ day18_var_coefficients.csv")
-    print(f"  ✓ day18_fevd.csv")
-    print(f"  ✓ day18_irf.csv")
+    print(f"\n  [OK] day18_var_coefficients.csv")
+    print(f"  [OK] day18_fevd.csv")
+    print(f"  [OK] day18_irf.csv")
 
     return {
         "rv_df"      : rv_df,

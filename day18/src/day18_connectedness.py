@@ -27,7 +27,8 @@ def fevd_from_var(rv_window: pd.DataFrame , n_lags : int , horizon : int = FEVD_
         model = VAR(rv_window)
         result = model.fit(maxlags=n_lags , ic = None , trend = "c")
         fevd = result.fevd(periods = horizon)
-        return fevd.decomp[:,:,-1] ## these are the final horizon values 
+        ## decomp has shape (k, periods, k) in current statsmodels; take the last horizon
+        return fevd.decomp[:,-1,:] 
     except Exception: 
         return np.eye(k)/k
 
@@ -41,7 +42,7 @@ def diebold_yilmaz_table(fevd_mat: np.ndarray , tickers : list = TICKERS)-> pd.D
     row_sums = mat.sum(axis = 1, keepdims = True)
     mat = mat / np.maximum(row_sums , 1e-10)
 
-    table = pd.DataFrame(mat , index = tickers , column = tickers)
+    table = pd.DataFrame(mat , index = tickers , columns = tickers)
 
     #TO : how much asset j is contributing to the others forecast errors 
     # column sum of off diagonal entries 
@@ -57,7 +58,6 @@ def diebold_yilmaz_table(fevd_mat: np.ndarray , tickers : list = TICKERS)-> pd.D
     #NET
     net = to_row - from_col
     table.loc["NET"] = np.append(net , np.nan)
-    table["NET"] = np.nan
 
     #Now the total correctedness Index
     tci = (mat.sum() - np.trace(mat)) / n
@@ -66,7 +66,7 @@ def diebold_yilmaz_table(fevd_mat: np.ndarray , tickers : list = TICKERS)-> pd.D
 
     return table.round(4)
 
-def total_correctedness_index(fevd_mat : np.ndarray)-> float:
+def total_connectedness_index(fevd_mat : np.ndarray)-> float:
 
     n = fevd_mat.shape[0]
     off_diag = fevd_mat.sum() - np.trace(fevd_mat)
@@ -82,11 +82,13 @@ def rolling_connectedness(rv_df : pd.DataFrame , win: int = ROLL_WIN , step : in
         date = rv_df.index[end-1]
 
         fevd_mat = fevd_from_var(window , n_lags = n_lags , horizon = horizon)
-        tci = total_correctedness_index(fevd_mat)
+        tci = total_connectedness_index(fevd_mat)
 
         # Normalise 
         row_sums = fevd_mat.sum(axis = 1 , keepdims = True)
         mat_norm = fevd_mat / np.maximum(row_sums , 1e-10)
+        to = mat_norm.sum(axis = 0) - np.diag(mat_norm)
+        from_ = mat_norm.sum(axis = 1) - np.diag(mat_norm)
         net = to - from_
 
         row = {"date" : date, "TCI" : round(tci , 4)}
@@ -128,8 +130,8 @@ def run_connectedness(var_results : dict)-> dict:
     dy_table.to_csv(os.path.join(OUT_DIR, "day18_dy_table.csv"))
     roll_df.to_csv( os.path.join(OUT_DIR, "day18_rolling_tci.csv"))
 
-    print(f"\n  ✓ day18_dy_table.csv")
-    print(f"  ✓ day18_rolling_tci.csv")
+    print(f"\n  [OK] day18_dy_table.csv")
+    print(f"  [OK] day18_rolling_tci.csv")
 
     return {
         "dy_table": dy_table,
